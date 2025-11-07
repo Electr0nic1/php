@@ -6,6 +6,17 @@ require_once("functions.php");
 
 $categories = get_categories($connection);
 
+if (!isset($_SESSION['user'])) {
+    show_error(
+        403,
+        $categories,
+        $is_auth,
+        $user_name,
+        "403 Доступ запрещён",
+        "У вас нет прав для добавления лота."
+    );
+}
+
 $errors = [];
 $lot_data = [];
 
@@ -16,7 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
         $file_url = saveLotImage($_FILES['lot-img']);
-        $lot_id = saveLotToDb($connection, $lot_data, $file_url, $categories, 1);
+        $author_id = $_SESSION['user']['id'];
+        $lot_id = saveLotToDb($connection, $lot_data, $file_url, $categories, $author_id);
 
         if ($lot_id) {
             header("Location: lot.php?id=" . $lot_id);

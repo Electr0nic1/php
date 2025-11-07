@@ -6,7 +6,6 @@
                     <a href="pages/all-lots.html"><?= htmlspecialchars($category['name']) ?></a>
                 </li>
             <?php endforeach; ?>
-
         </ul>
     </nav>
     <form class="form form--add-lot container <?= !empty($errors) ? 'form--invalid' : null; ?>" action="./add.php" method="post" enctype="multipart/form-data">

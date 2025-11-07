@@ -28,26 +28,6 @@ function get_dt_range($date)
     return [$formatted_hours, $formatted_minutes];
 }
 
-function show_404(array $categories, bool $is_auth, string $user_name)
-{
-    http_response_code(404);
-
-    $content = include_template("404.php", [
-        "categories" => $categories
-    ]);
-
-    $layout = include_template("layout.php", [
-        "content" => $content,
-        "is_auth" => $is_auth,
-        "user_name" => $user_name,
-        "categories" => $categories,
-        "title" => "Лот не найден"
-    ]);
-
-    print($layout);
-    exit();
-}
-
 function get_new_lots(mysqli $connection)
 {
     $sql = "SELECT 
@@ -90,14 +70,44 @@ function get_lot_by_id(mysqli $connection, int $lot_id)
             FROM lots
             JOIN categories ON lots.category_id = categories.id
             WHERE lots.id = ?;";
-    $stmt = db_get_prepare_stmt($connection, $sql, [$lot_id]);
+    $stmt = mysqli_prepare($connection, $sql);
+    mysqli_stmt_bind_param($stmt, "i", $lot_id);
     mysqli_stmt_execute($stmt);
+
     $result = mysqli_stmt_get_result($stmt);
     $lot = mysqli_fetch_assoc($result);
     return $lot;
 }
 
-function validate_length($value, $min = 1, $max = 255)
+function show_error(
+    int $code,
+    array $categories,
+    bool $is_auth,
+    string $user_name,
+    string $error_message,
+    string $error_description
+) {
+    http_response_code($code);
+
+    $content = include_template("error.php", [
+        "categories" => $categories,
+        "error_message" => $error_message,
+        "error_description" => $error_description
+    ]);
+
+    $layout = include_template("layout.php", [
+        "content" => $content,
+        "is_auth" => $is_auth,
+        "user_name" => $user_name,
+        "categories" => $categories,
+        "title" => $error_message
+    ]);
+
+    print($layout);
+    exit();
+}
+
+function validate_length($value, int $min = 1, int $max = 255)
 {
     $value = trim($value);
 
@@ -214,8 +224,6 @@ function validateLotForm($data, $files, $categories)
         $errors['lot-img'] = $fileError;
     }
 
-    // var_dump($errors);
-
     return array_filter($errors);
 }
 
@@ -259,3 +267,47 @@ function saveLotToDb($con, $lot, $file_url, $categories, $author_id)
     return mysqli_stmt_affected_rows($stmt) > 0 ? mysqli_insert_id($con) : null;
 }
 
+function validate_email_format(string $email, int $min = 5, int $max = 320): ?string
+{
+    $email = trim($email);
+
+    if ($email === '') {
+        return "Поле обязательно для заполнения";
+    }
+
+    $length = mb_strlen($email);
+
+    if ($length < $min) {
+        return "Минимальная длина email — $min символов";
+    }
+
+    if ($length > $max) {
+        return "Максимальная длина email — $max символов";
+    }
+
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        return "Введите корректный e-mail";
+    }
+
+    return null;
+}
+
+function check_email_in_db(string $email, mysqli $connection, bool $should_exist = false): ?string
+{
+    $sql = "SELECT id FROM users WHERE email = ?";
+    $stmt = mysqli_prepare($connection, $sql);
+    mysqli_stmt_bind_param($stmt, "s", $email);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    if (!$result) {
+        return "Ошибка проверки email";
+    }
+
+    $exists = mysqli_num_rows($result) > 0;
+
+    if ($should_exist && !$exists) return "Пользователь с таким email не найден";
+    if (!$should_exist && $exists) return "Пользователь с таким email уже существует";
+
+    return null;
+}

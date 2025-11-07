@@ -8,13 +8,13 @@ $lot_id = filter_input(INPUT_GET, "id", FILTER_VALIDATE_INT);
 $categories = get_categories($connection);
 
 if (!$lot_id) {
-    show_404($categories, $is_auth, $user_name);
+    show_error(404, $categories, $is_auth, $user_name, "404 Лот не найден", "Лот с указанным идентификатором не существует.");
 }
 
 $lot = get_lot_by_id($connection, $lot_id);
 
 if (!$lot) {
-    show_404($categories, $is_auth, $user_name);
+    show_error(404, $categories, $is_auth, $user_name, "404 Лот не найден", "Лот с указанным идентификатором не существует.");
 }
 
 $content = include_template("lot_template.php", [
