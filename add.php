@@ -23,12 +23,12 @@ $lot_data = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $lot_data = $_POST;
 
-    $errors = validateLotForm($lot_data, $_FILES, $categories);
+    $errors = validate_lot_form($lot_data, $_FILES, $categories);
 
     if (empty($errors)) {
-        $file_url = saveLotImage($_FILES['lot-img']);
+        $file_url = save_lot_image($_FILES['lot-img']);
         $author_id = $_SESSION['user']['id'];
-        $lot_id = saveLotToDb($connection, $lot_data, $file_url, $categories, $author_id);
+        $lot_id = save_lot_to_db($connection, $lot_data, $file_url, $categories, $author_id);
 
         if ($lot_id) {
             header("Location: lot.php?id=" . $lot_id);

@@ -55,6 +55,26 @@ function get_categories(mysqli $connection)
     return $categories;
 }
 
+function get_bets_by_lot_id(mysqli $connection, int $lot_id)
+{
+    $sql = "SELECT 
+                bets.sum,
+                bets.date_placed,
+                bets.user_id,
+                users.name AS user_name
+            FROM bets
+            JOIN users ON bets.user_id = users.id
+            WHERE bets.lot_id = ?
+            ORDER BY bets.date_placed DESC;";
+    $stmt = mysqli_prepare($connection, $sql);
+    mysqli_stmt_bind_param($stmt, "i", $lot_id);
+    mysqli_stmt_execute($stmt);
+
+    $result = mysqli_stmt_get_result($stmt);
+    $bets = mysqli_fetch_all($result, MYSQLI_ASSOC);
+    return $bets;
+}
+
 function get_lot_by_id(mysqli $connection, int $lot_id)
 {
     $sql = "SELECT 
@@ -66,6 +86,7 @@ function get_lot_by_id(mysqli $connection, int $lot_id)
                 lots.step_rate,
                 lots.start_price,
                 lots.expiration_date,
+                lots.author_id,
                 categories.name AS category
             FROM lots
             JOIN categories ON lots.category_id = categories.id
@@ -160,6 +181,25 @@ function validate_positive_number($value, $field_name = "Поле")
     return null;
 }
 
+function validate_positive_integer($value, $field_name = "Поле")
+{
+    if ($value === null || $value === '') {
+        return "$field_name обязательно для заполнения";
+    }
+
+    if (filter_var($value, FILTER_VALIDATE_INT) === false) {
+        return "$field_name должно быть целым числом";
+    }
+
+    $number = (int)$value;
+
+    if ($number <= 0) {
+        return "$field_name должно быть положительным числом";
+    }
+
+    return null;
+}
+
 function validate_date($value)
 {
     if (empty($value)) {
@@ -199,7 +239,7 @@ function validate_image($file)
 }
 
 
-function validateLotForm($data, $files, $categories)
+function validate_lot_form($data, $files, $categories)
 {
     $errors = [];
 
@@ -208,7 +248,7 @@ function validateLotForm($data, $files, $categories)
         'category' => fn($value) => validate_category($value, $categories),
         'message' => fn($value) => validate_length($value, 20, 1023),
         'lot-rate' => fn($value) => validate_positive_number($value),
-        'lot-step' => fn($value) => validate_positive_number($value),
+        'lot-step' => fn($value) => validate_positive_integer($value),
         'lot-date' => fn($value) => validate_date($value),
     ];
 
@@ -227,7 +267,7 @@ function validateLotForm($data, $files, $categories)
     return array_filter($errors);
 }
 
-function saveLotImage($file): string
+function save_lot_image($file): string
 {
     $file_name = uniqid() . '_' . $file['name'];
     $file_path = __DIR__ . '/uploads/';
@@ -236,7 +276,7 @@ function saveLotImage($file): string
     return 'uploads/' . $file_name;
 }
 
-function saveLotToDb($con, $lot, $file_url, $categories, $author_id)
+function save_lot_to_db($con, $lot, $file_url, $categories, $author_id)
 {
     $category_id = null;
     foreach ($categories as $category) {
@@ -310,4 +350,62 @@ function check_email_in_db(string $email, mysqli $connection, bool $should_exist
     if (!$should_exist && $exists) return "Пользователь с таким email уже существует";
 
     return null;
+}
+
+function time_ago($datetime)
+{
+    $now = new DateTime();
+    $then = new DateTime($datetime);
+    $diff = $now->getTimestamp() - $then->getTimestamp();
+
+    if ($diff < 60) {
+        $seconds = $diff;
+        return $seconds . ' ' . get_noun_plural_form($seconds, 'секунду', 'секунды', 'секунд') . ' назад';
+    } elseif ($diff < 3600) {
+        $minutes = floor($diff / 60);
+        return $minutes . ' ' . get_noun_plural_form($minutes, 'минуту', 'минуты', 'минут') . ' назад';
+    } elseif ($diff < 86400) {
+        $hours = floor($diff / 3600);
+        return $hours . ' ' . get_noun_plural_form($hours, 'час', 'часа', 'часов') . ' назад';
+    } else {
+        $days = floor($diff / 86400);
+        return $days . ' ' . get_noun_plural_form($days, 'день', 'дня', 'дней') . ' назад';
+    }
+}
+
+function get_current_price($connection, $lot_id, $start_price)
+{
+    $sql = "SELECT sum FROM bets WHERE lot_id = ? ORDER BY date_placed DESC LIMIT 1";
+    $stmt = mysqli_prepare($connection, $sql);
+    mysqli_stmt_bind_param($stmt, "i", $lot_id);
+    mysqli_stmt_execute($stmt);
+    mysqli_stmt_bind_result($stmt, $last_sum);
+    mysqli_stmt_fetch($stmt);
+    mysqli_stmt_close($stmt);
+
+    return $last_sum ?? $start_price;
+}
+
+function can_place_bet(?int $user_id, array $lot, ?array $last_bets): bool
+{
+    if (!$user_id) {
+        return false;
+    }
+
+    $time_left = get_dt_range($lot['expiration_date']);
+    $hours_left = $time_left[0];
+    $minutes_left = $time_left[1];
+    if ($hours_left <= 0 && $minutes_left <= 0) {
+        return false;
+    }
+
+    if ($user_id === $lot['author_id']) {
+        return false;
+    }
+
+    if ($last_bets && $user_id === $last_bets[0]['user_id']) {
+        return false;
+    }
+
+    return true;
 }
