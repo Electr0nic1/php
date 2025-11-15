@@ -6,7 +6,7 @@
 
             <?php foreach ($categories as $category): ?>
                 <li class="promo__item promo__item--<?= $category['symbol_code'] ?>">
-                    <a class="promo__link" href="pages/all-lots.html"><?= htmlspecialchars($category['name']) ?></a>
+                    <a class="promo__link" href="all-lots.php?id=<?= $category['id'] ?>"><?= htmlspecialchars($category['name']) ?></a>
                 </li>
             <?php endforeach; ?>
 
@@ -36,9 +36,6 @@
                                 <span class="lot__amount">Стартовая цена</span>
                                 <span class="lot__cost"><?= htmlspecialchars(format_ruble($lot["start_price"])) ?></span>
                             </div>
-                            <?php
-
-                            ?>
                             <div class="lot__timer timer <?= $time_class; ?>">
                                 <?= $hours_left ?>:<?= $minutes_left ?>
                             </div>

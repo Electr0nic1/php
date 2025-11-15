@@ -65,7 +65,7 @@ function get_bets_by_lot_id(mysqli $connection, int $lot_id)
             FROM bets
             JOIN users ON bets.user_id = users.id
             WHERE bets.lot_id = ?
-            ORDER BY bets.date_placed DESC;";
+            ORDER BY bets.date_placed DESC LIMIT 10;";
     $stmt = mysqli_prepare($connection, $sql);
     mysqli_stmt_bind_param($stmt, "i", $lot_id);
     mysqli_stmt_execute($stmt);
@@ -408,4 +408,42 @@ function can_place_bet(?int $user_id, array $lot, ?array $last_bets): bool
     }
 
     return true;
+}
+
+function get_lots_by_category(mysqli $connection, int $category_id): array
+{
+    $sql = "SELECT 
+                lots.id,
+                lots.date_created,
+                lots.name,
+                lots.image_url,
+                lots.start_price,
+                lots.expiration_date,
+                categories.name AS category
+            FROM lots
+            JOIN categories ON lots.category_id = categories.id
+            WHERE lots.category_id = ?
+              AND lots.expiration_date >= CURDATE()
+            ORDER BY lots.date_created DESC";
+
+    $stmt = mysqli_prepare($connection, $sql);
+    if (!$stmt) {
+        die("Ошибка подготовки запроса: " . mysqli_error($connection));
+    }
+
+    mysqli_stmt_bind_param($stmt, "i", $category_id);
+    mysqli_stmt_execute($stmt);
+
+    $result = mysqli_stmt_get_result($stmt);
+
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+
+function getCategoryNameById(array $categories, int $category_id): ?string {
+    foreach ($categories as $category) {
+        if ((int)$category["id"] === $category_id) {
+            return $category["name"];
+        }
+    }
+    return null;
 }
