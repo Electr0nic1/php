@@ -29,7 +29,7 @@
                     <?php if ($is_auth): ?>
                         <div class="user-menu__logged">
                             <p><?php print(htmlspecialchars($user_name)) ?></p>
-                            <a class="user-menu__bets" href="pages/my-bets.html">Мои ставки</a>
+                            <a class="user-menu__bets" href="./my-bets.php">Мои ставки</a>
                             <a class="user-menu__logout" href="./logout.php">Выход</a>
                         </div>
                     <?php else: ?>
@@ -39,22 +39,24 @@
                         </ul>
                     <?php endif; ?>
 
-                    <!-- здесь должен быть PHP код для показа меню и данных пользователя -->
-
                 </nav>
             </div>
         </header>
+
         <?= $content ?>
+
     </div>
 
     <footer class="main-footer">
         <nav class="nav">
             <ul class="nav__list container">
+
                 <?php foreach ($categories as $category): ?>
                     <li class="nav__item">
-                        <a href="pages/all-lots.html"><?= htmlspecialchars($category['name']) ?></a>
+                        <a href="all-lots.php?id=<?= $category['id'] ?>"><?= htmlspecialchars($category['name']) ?></a>
                     </li>
                 <?php endforeach; ?>
+                
             </ul>
         </nav>
         <div class="main-footer__bottom container">

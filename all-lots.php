@@ -6,7 +6,7 @@ require_once("functions.php");
 
 $category_id = filter_input(INPUT_GET, "id", FILTER_VALIDATE_INT);
 $categories = get_categories($connection);
-$title = getCategoryNameById($categories, $category_id);
+$title = get_category_name_by_id($categories, $category_id);
 
 if (!$category_id) {
     show_error(404, $categories, $is_auth, $user_name, "404 Категория не найдена", "Категорияы с указанным идентификатором не существует.");

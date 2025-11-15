@@ -75,6 +75,35 @@ function get_bets_by_lot_id(mysqli $connection, int $lot_id)
     return $bets;
 }
 
+function get_bets_by_user_id(mysqli $connection, int $user_id)
+{
+    $sql = "SELECT 
+                bets.id AS bet_id,
+                bets.sum,
+                bets.date_placed,
+                
+                lots.id AS lot_id,
+                lots.name AS lot_name,
+                lots.image_url,
+                lots.expiration_date,
+                lots.winner_id,
+                
+                categories.name AS category_name
+            FROM bets
+            JOIN lots ON bets.lot_id = lots.id
+            JOIN categories ON lots.category_id = categories.id
+            WHERE bets.user_id = ?
+            ORDER BY bets.date_placed DESC;";
+
+    $stmt = mysqli_prepare($connection, $sql);
+    mysqli_stmt_bind_param($stmt, "i", $user_id);
+    mysqli_stmt_execute($stmt);
+
+    $result = mysqli_stmt_get_result($stmt);
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+}
+
+
 function get_lot_by_id(mysqli $connection, int $lot_id)
 {
     $sql = "SELECT 
@@ -439,7 +468,8 @@ function get_lots_by_category(mysqli $connection, int $category_id): array
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-function getCategoryNameById(array $categories, int $category_id): ?string {
+function get_category_name_by_id(array $categories, int $category_id): ?string
+{
     foreach ($categories as $category) {
         if ((int)$category["id"] === $category_id) {
             return $category["name"];
