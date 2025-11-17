@@ -17,7 +17,7 @@
                 $minutes_left = $time_left[1];
                 $time_class = ($hours_left < 1) ? "timer--finishing" : null;
 
-                $is_winner = ($bet['winner_id'] ?? 0) === ($_SESSION['user']['id'] ?? 0);
+                $is_winner = (int)($bet['winner_id'] ?? 0) === (int)($_SESSION['user']['id'] ?? 0);
                 $is_ended = ((int)$hours_left === 0) && ((int)$minutes_left === 0);
                 $win_class = $is_winner ? 'rates__item--win' : '';
                 $end_class = !$is_winner && $is_ended ? 'rates__item--end' : '';
@@ -27,7 +27,7 @@
                         <div class="rates__img">
                             <img src=<?= $bet['image_url'] ?> width="54" height="40" alt="Сноуборд">
                         </div>
-                        <h3 class="rates__title"><a href="lot.html"><?= $bet['lot_name'] ?></a></h3>
+                        <h3 class="rates__title"><a href="lot.php?id=<?= $bet['lot_id'] ?>"><?= $bet['lot_name'] ?></a></h3>
                     </td>
                     <td class="rates__category">
                         <?= $bet['category_name'] ?>

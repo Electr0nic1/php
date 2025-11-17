@@ -1,5 +1,5 @@
 <?php
-$sql = "SELECT id FROM lots WHERE winner_id IS NULL AND expiration_date <= CURDATE()";
+$sql = "SELECT id FROM lots WHERE winner_id IS NULL AND expiration_date < CURDATE()";
 $result = mysqli_query($connection, $sql);
 $lots = mysqli_fetch_all($result, MYSQLI_ASSOC);
 

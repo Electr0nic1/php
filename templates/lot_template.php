@@ -20,7 +20,7 @@ $time_class = ($hours_left < 1) ? "timer--finishing" : null;
         <div class="lot-item__content">
             <div class="lot-item__left">
                 <div class="lot-item__image">
-                    <img src="./<?= htmlspecialchars($lot['image_url']) ?>" width="730" height="548" alt="<?= htmlspecialchars($lot['name']) ?>">
+                    <img src=<?= htmlspecialchars($lot['image_url']) ?> width="730" height="548" alt="<?= htmlspecialchars($lot['name']) ?>">
                 </div>
                 <p class="lot-item__category">Категория: <span><?= htmlspecialchars($lot['category']) ?></span></p>
                 <p class="lot-item__description"><?= htmlspecialchars($lot['description']) ?></p>

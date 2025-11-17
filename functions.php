@@ -439,9 +439,9 @@ function can_place_bet(?int $user_id, array $lot, ?array $last_bets): bool
     return true;
 }
 
-function get_lots_by_category(mysqli $connection, int $category_id): array
+function get_lots_by_category(mysqli $connection, int $category_id, int $limit, int $offset): array
 {
-    $sql = "SELECT 
+    $sql = "SELECT SQL_CALC_FOUND_ROWS
                 lots.id,
                 lots.date_created,
                 lots.name,
@@ -453,19 +453,27 @@ function get_lots_by_category(mysqli $connection, int $category_id): array
             JOIN categories ON lots.category_id = categories.id
             WHERE lots.category_id = ?
               AND lots.expiration_date >= CURDATE()
-            ORDER BY lots.date_created DESC";
+            ORDER BY lots.date_created DESC
+            LIMIT ? OFFSET ?";
 
     $stmt = mysqli_prepare($connection, $sql);
     if (!$stmt) {
-        die("Ошибка подготовки запроса: " . mysqli_error($connection));
+        die('Ошибка подготовки запроса: ' . mysqli_error($connection));
     }
 
-    mysqli_stmt_bind_param($stmt, "i", $category_id);
+    mysqli_stmt_bind_param($stmt, "iii", $category_id, $limit, $offset);
     mysqli_stmt_execute($stmt);
 
     $result = mysqli_stmt_get_result($stmt);
+    $lots = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
-    return mysqli_fetch_all($result, MYSQLI_ASSOC);
+    $total_result = mysqli_query($connection, "SELECT FOUND_ROWS() AS total");
+    $total = mysqli_fetch_assoc($total_result)['total'];
+
+    return [
+        'lots' => $lots,
+        'total' => $total
+    ];
 }
 
 function get_category_name_by_id(array $categories, int $category_id): ?string
@@ -476,4 +484,54 @@ function get_category_name_by_id(array $categories, int $category_id): ?string
         }
     }
     return null;
+}
+
+function search_lots(mysqli $connection, string $query, int $limit, int $offset): array {
+    $query = trim($query);
+    if ($query === '') {
+        return ['lots' => [], 'total' => 0];
+    }
+
+    $words = explode(' ', $query);
+    $ft_query = '';
+    foreach ($words as $word) {
+        if ($word !== '') {
+            $ft_query .= $word . '* ';
+        }
+    }
+    $ft_query = trim($ft_query);
+
+    $sql = "SELECT SQL_CALC_FOUND_ROWS 
+                lots.id,
+                lots.date_created,
+                lots.name,
+                lots.image_url,
+                lots.description,
+                lots.step_rate,
+                lots.start_price,
+                lots.expiration_date,
+                lots.author_id,
+                categories.name AS category,
+                MATCH(lots.name, lots.description) AGAINST(? IN BOOLEAN MODE) AS relevance
+            FROM lots
+            JOIN categories ON lots.category_id = categories.id
+            WHERE lots.expiration_date >= CURDATE()
+              AND MATCH(lots.name, lots.description) AGAINST(? IN BOOLEAN MODE)
+            ORDER BY relevance DESC
+            LIMIT ? OFFSET ?";
+
+    $stmt = mysqli_prepare($connection, $sql);
+    mysqli_stmt_bind_param($stmt, "ssii", $ft_query, $ft_query, $limit, $offset);
+    mysqli_stmt_execute($stmt);
+
+    $result = mysqli_stmt_get_result($stmt);
+    $lots = mysqli_fetch_all($result, MYSQLI_ASSOC);
+
+    $total_result = mysqli_query($connection, "SELECT FOUND_ROWS() AS total");
+    $total = mysqli_fetch_assoc($total_result)['total'];
+
+    return [
+        'lots' => $lots,
+        'total' => $total
+    ];
 }

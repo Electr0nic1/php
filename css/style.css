@@ -1237,3 +1237,11 @@ input:invalid .form__error{
 .rates__item--end {
   opacity: 0.4;
 }
+
+.pagination-item.disabled {
+    opacity: 0.2;
+    pointer-events: none;
+}
+.pagination-item.disabled span {
+    cursor: default;
+}

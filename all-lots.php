@@ -12,13 +12,23 @@ if (!$category_id) {
     show_error(404, $categories, $is_auth, $user_name, "404 Категория не найдена", "Категорияы с указанным идентификатором не существует.");
 }
 
-$lots = get_lots_by_category($connection, $category_id);
+$page = max(1, (int)($_GET['page'] ?? 1));
+$limit = 9;
+$offset = ($page - 1) * $limit;
+
+$lots_data = get_lots_by_category($connection, $category_id, $limit, $offset);
+
+$lots = $lots_data['lots'];
+$total_lots = $lots_data['total'];
+$total_pages = ceil($total_lots / $limit);
 
 $content = include_template("all-lots_template.php", [
     "category_id" => $category_id,
     "lots" => $lots,
     "categories" => $categories,
-    "title" => $title
+    "title" => $title,
+    "total_pages" => $total_pages,
+    "page" => $page
 ]);
 
 $layout = include_template("layout.php", [

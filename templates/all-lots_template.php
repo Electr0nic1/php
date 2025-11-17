@@ -3,7 +3,7 @@
         <ul class="nav__list container">
             <?php foreach ($categories as $category): ?>
                 <?php
-                    $is_active = ($category['id'] == $category_id) ? 'nav__item--current' : '';
+                $is_active = ($category['id'] == $category_id) ? 'nav__item--current' : '';
                 ?>
                 <li class="nav__item <?= $is_active ?>">
                     <a href="all-lots.php?id=<?= $category['id'] ?>">
@@ -50,13 +50,33 @@
             <?php endif; ?>
 
         </section>
-        <!-- <ul class="pagination-list">
-            <li class="pagination-item pagination-item-prev"><a>Назад</a></li>
-            <li class="pagination-item pagination-item-active"><a>1</a></li>
-            <li class="pagination-item"><a href="#">2</a></li>
-            <li class="pagination-item"><a href="#">3</a></li>
-            <li class="pagination-item"><a href="#">4</a></li>
-            <li class="pagination-item pagination-item-next"><a href="#">Вперед</a></li>
-        </ul> -->
+        <?php if ($total_pages > 1): ?>
+            <ul class="pagination-list">
+
+                <li class="pagination-item pagination-item-prev <?= $page <= 1 ? 'disabled' : '' ?>">
+                    <?php if ($page > 1): ?>
+                        <a href="?id=<?= $category_id ?>&page=<?= $page - 1 ?>">Назад</a>
+                    <?php else: ?>
+                        <span>Назад</span>
+                    <?php endif; ?>
+                </li>
+
+                <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                    <li class="pagination-item <?= $i === $page ? 'pagination-item-active' : '' ?>">
+                        <a href="?id=<?= $category_id ?>&page=<?= $i ?>"><?= $i ?></a>
+                    </li>
+                <?php endfor; ?>
+
+                <li class="pagination-item pagination-item-next <?= $page >= $total_pages ? 'disabled' : '' ?>">
+                    <?php if ($page < $total_pages): ?>
+                        <a href="?id=<?= $category_id ?>&page=<?= $page + 1 ?>">Вперед</a>
+                    <?php else: ?>
+                        <span>Вперед</span>
+                    <?php endif; ?>
+                </li>
+
+            </ul>
+        <?php endif; ?>
+
     </div>
 </main>
