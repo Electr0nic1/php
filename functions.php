@@ -87,11 +87,15 @@ function get_bets_by_user_id(mysqli $connection, int $user_id)
                 lots.image_url,
                 lots.expiration_date,
                 lots.winner_id,
+                lots.author_id,
                 
-                categories.name AS category_name
+                categories.name AS category_name,
+                
+                users.contacts AS author_contacts
             FROM bets
             JOIN lots ON bets.lot_id = lots.id
             JOIN categories ON lots.category_id = categories.id
+            JOIN users ON lots.author_id = users.id
             WHERE bets.user_id = ?
             ORDER BY bets.date_placed DESC;";
 
@@ -102,6 +106,7 @@ function get_bets_by_user_id(mysqli $connection, int $user_id)
     $result = mysqli_stmt_get_result($stmt);
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
+
 
 
 function get_lot_by_id(mysqli $connection, int $lot_id)
@@ -267,7 +272,6 @@ function validate_image($file)
     return true;
 }
 
-
 function validate_lot_form($data, $files, $categories)
 {
     $errors = [];
@@ -361,7 +365,7 @@ function validate_email_format(string $email, int $min = 5, int $max = 320): ?st
     return null;
 }
 
-function check_email_in_db(string $email, mysqli $connection, bool $should_exist = false): ?string
+function check_email_in_db(string $email, mysqli $connection): ?string
 {
     $sql = "SELECT id FROM users WHERE email = ?";
     $stmt = mysqli_prepare($connection, $sql);
@@ -375,8 +379,9 @@ function check_email_in_db(string $email, mysqli $connection, bool $should_exist
 
     $exists = mysqli_num_rows($result) > 0;
 
-    if ($should_exist && !$exists) return "Пользователь с таким email не найден";
-    if (!$should_exist && $exists) return "Пользователь с таким email уже существует";
+    if ($exists) {
+        return "Пользователь с таким email уже существует";
+    }
 
     return null;
 }
@@ -486,7 +491,8 @@ function get_category_name_by_id(array $categories, int $category_id): ?string
     return null;
 }
 
-function search_lots(mysqli $connection, string $query, int $limit, int $offset): array {
+function search_lots(mysqli $connection, string $query, int $limit, int $offset): array
+{
     $query = trim($query);
     if ($query === '') {
         return ['lots' => [], 'total' => 0];
@@ -512,12 +518,12 @@ function search_lots(mysqli $connection, string $query, int $limit, int $offset)
                 lots.expiration_date,
                 lots.author_id,
                 categories.name AS category,
-                MATCH(lots.name, lots.description) AGAINST(? IN BOOLEAN MODE) AS relevance
+                MATCH(lots.name, lots.description) AGAINST(? IN BOOLEAN MODE)
             FROM lots
             JOIN categories ON lots.category_id = categories.id
             WHERE lots.expiration_date >= CURDATE()
               AND MATCH(lots.name, lots.description) AGAINST(? IN BOOLEAN MODE)
-            ORDER BY relevance DESC
+            ORDER BY lots.date_created DESC
             LIMIT ? OFFSET ?";
 
     $stmt = mysqli_prepare($connection, $sql);

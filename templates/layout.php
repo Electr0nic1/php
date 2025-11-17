@@ -56,7 +56,7 @@
                         <a href="all-lots.php?id=<?= $category['id'] ?>"><?= htmlspecialchars($category['name']) ?></a>
                     </li>
                 <?php endforeach; ?>
-                
+
             </ul>
         </nav>
         <div class="main-footer__bottom container">

@@ -3,7 +3,7 @@
         <ul class="nav__list container">
             <?php foreach ($categories as $category): ?>
                 <li class="nav__item">
-                    <a href="all-lots.php?id=<?= $category['id'] ?>"><?= htmlspecialchars($category['name']) ?></a>
+                    <a href="all-lots.php?id=<?= $category['id'] ?? '' ?>"><?= htmlspecialchars($category['name'] ?? '') ?></a>
                 </li>
             <?php endforeach; ?>
         </ul>
@@ -21,8 +21,8 @@
                 <select id="category" name="category">
                     <option value="" selected hidden>Выберите категорию</option>
                     <?php foreach ($categories as $category): ?>
-                        <option value="<?= htmlspecialchars($category['name']) ?>" <?= (isset($lot_data['category']) && $lot_data['category'] === $category['name']) ? 'selected' : ''; ?>>
-                            <?= htmlspecialchars($category['name']); ?>
+                        <option value="<?= htmlspecialchars($category['name'] ?? '') ?>" <?= (isset($lot_data['category']) && $lot_data['category'] === $category['name']) ? 'selected' : ''; ?>>
+                            <?= htmlspecialchars($category['name'] ?? ''); ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
@@ -62,7 +62,7 @@
             </div>
         </div>
         <span class="form__error form__error--bottom">Пожалуйста, исправьте ошибки в форме.</span>
-        <?= isset($errors['db']) ? '<span class="form__error form__error--bottom">' . htmlspecialchars($errors['db']) . '</span>' : ''; ?>
+        <?= isset($errors['db']) ? '<span class="form__error form__error--bottom">' . htmlspecialchars($errors['db'] ?? '') . '</span>' : ''; ?>
         <button type="submit" class="button">Добавить лот</button>
     </form>
 </main>

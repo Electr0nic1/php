@@ -50,7 +50,7 @@
                         <span>Назад</span>
                     <?php endif; ?>
                 </li>
-            
+
                 <?php for ($i = 1; $i <= $total_pages; $i++): ?>
                     <li class="pagination-item <?= $i === $page ? 'pagination-item-active' : '' ?>">
                         <a href="?search=<?= urlencode($query) ?>&page=<?= $i ?>"><?= $i ?></a>

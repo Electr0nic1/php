@@ -3,11 +3,11 @@
         <ul class="nav__list container">
             <?php foreach ($categories as $category): ?>
                 <?php
-                $is_active = ($category['id'] == $category_id) ? 'nav__item--current' : '';
+                $is_active = ((int)($category['id'] ?? 0) === (int)$category_id) ? 'nav__item--current' : '';
                 ?>
                 <li class="nav__item <?= $is_active ?>">
-                    <a href="all-lots.php?id=<?= $category['id'] ?>">
-                        <?= htmlspecialchars($category['name']) ?>
+                    <a href="all-lots.php?id=<?= $category['id'] ?? 0 ?>">
+                        <?= htmlspecialchars($category['name'] ?? '') ?>
                     </a>
                 </li>
             <?php endforeach; ?>

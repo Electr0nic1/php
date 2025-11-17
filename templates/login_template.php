@@ -21,6 +21,7 @@
             <span class="form__error"><?= $errors['password'] ?? '' ?></span>
         </div>
         <span class="form__error form__error--bottom">Пожалуйста, исправьте ошибки в форме.</span>
+        <?= isset($errors['form']) ? '<span class="form__error form__error--bottom">' . htmlspecialchars($errors['form']) . '</span>' : ''; ?>
         <button type="submit" class="button">Войти</button>
     </form>
 </main>

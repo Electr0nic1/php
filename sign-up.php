@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $sign_up_data = $_POST;
 
     $rules = [
-        'email' => fn($value) => validate_email_format($value) ?: check_email_in_db($value, $connection, false),
+        'email' => fn($value) => validate_email_format($value) ?: check_email_in_db($value, $connection),
         'password' => fn($value) => validate_length($value, 8, 255),
         'name' => fn($value) => validate_length($value, 2, 255),
         'message' => fn($value) => validate_length($value, 5, 255),

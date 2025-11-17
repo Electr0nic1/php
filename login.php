@@ -24,14 +24,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $login_data = $_POST;
 
     $rules = [
-        'email' => fn($value) => validate_email_format($value) ?: check_email_in_db($value, $connection, true),
+        'email' => fn($value) => validate_email_format($value),
         'password' => fn($value) => validate_length($value, 8, 255),
     ];
 
     foreach ($rules as $field => $validator) {
-        $errors[$field] = isset($login_data[$field])
-            ? $validator($login_data[$field]) ?? null
-            : "Поле обязательно для заполнения";
+        if (!isset($login_data[$field]) || trim($login_data[$field]) === '') {
+            $errors[$field] = "Поле обязательно для заполнения";
+        } else {
+            $errors[$field] = $validator($login_data[$field]) ?? null;
+        }
     }
 
     $errors = array_filter($errors);
@@ -43,6 +45,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
 
+        $login_error = "Неверный логин или пароль";
+
         if ($result && mysqli_num_rows($result) > 0) {
             $user = mysqli_fetch_assoc($result);
 
@@ -51,10 +55,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header("Location: index.php");
                 exit();
             } else {
-                $errors['password'] = "Вы ввели неверный пароль";
+                $errors['form'] = $login_error;
             }
         } else {
-            $errors['email'] = "Пользователь с таким email не найден";
+            $errors['form'] = $login_error;
         }
     }
 }
