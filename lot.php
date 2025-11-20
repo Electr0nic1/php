@@ -55,7 +55,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user_id = $_SESSION['user']['id'];
         $sum = (int)$bet_data['cost'];
 
-
         $sql = "INSERT INTO bets (lot_id, user_id, sum) VALUES (?, ?, ?)";
         $stmt = mysqli_prepare($connection, $sql);
 

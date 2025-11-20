@@ -4,11 +4,23 @@ date_default_timezone_set("Asia/Yekaterinburg");
 define("seconds_in_hour", 3600);
 define("seconds_in_minute", 60);
 
+/**
+ * Форматирует число в рубли с пробелами и символом ₽.
+ *
+ * @param float|int $num Число для форматирования.
+ * @return string Отформатированная строка с рублями.
+ */
 function format_ruble($num): string
 {
     return number_format($num, 0, ".", " ") . " ₽";
 }
 
+/**
+ * Получает оставшееся время до указанной даты в часах и минутах.
+ *
+ * @param string $date Дата в формате 'YYYY-MM-DD'.
+ * @return array Возвращает массив из двух элементов: [часы, минуты], оба в формате '00'.
+ */
 function get_dt_range($date)
 {
     $now = time();
@@ -28,6 +40,12 @@ function get_dt_range($date)
     return [$formatted_hours, $formatted_minutes];
 }
 
+/**
+ * Получает список всех новых лотов, которые еще не истекли.
+ *
+ * @param mysqli $connection Соединение с базой данных.
+ * @return array Массив ассоциативных массивов с информацией о лотах.
+ */
 function get_new_lots(mysqli $connection)
 {
     $sql = "SELECT 
@@ -47,6 +65,12 @@ function get_new_lots(mysqli $connection)
     return $lots;
 }
 
+/**
+ * Получает список всех категорий лотов.
+ *
+ * @param mysqli $connection Соединение с базой данных.
+ * @return array Массив ассоциативных массивов с категориями.
+ */
 function get_categories(mysqli $connection)
 {
     $sql = "SELECT * FROM categories;";
@@ -55,6 +79,13 @@ function get_categories(mysqli $connection)
     return $categories;
 }
 
+/**
+ * Получает последние 10 ставок для конкретного лота.
+ *
+ * @param mysqli $connection Соединение с базой данных.
+ * @param int $lot_id Идентификатор лота.
+ * @return array Массив ставок с информацией о пользователях.
+ */
 function get_bets_by_lot_id(mysqli $connection, int $lot_id)
 {
     $sql = "SELECT 
@@ -75,6 +106,13 @@ function get_bets_by_lot_id(mysqli $connection, int $lot_id)
     return $bets;
 }
 
+/**
+ * Получает все ставки конкретного пользователя с информацией о лотах.
+ *
+ * @param mysqli $connection Соединение с базой данных.
+ * @param int $user_id Идентификатор пользователя.
+ * @return array Массив ставок с деталями лотов и контактов авторов.
+ */
 function get_bets_by_user_id(mysqli $connection, int $user_id)
 {
     $sql = "SELECT 
@@ -107,8 +145,13 @@ function get_bets_by_user_id(mysqli $connection, int $user_id)
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-
-
+/**
+ * Получает данные одного лота по его идентификатору.
+ *
+ * @param mysqli $connection Соединение с базой данных.
+ * @param int $lot_id Идентификатор лота.
+ * @return array|null Ассоциативный массив с информацией о лоте или null, если лот не найден.
+ */
 function get_lot_by_id(mysqli $connection, int $lot_id)
 {
     $sql = "SELECT 
@@ -134,6 +177,18 @@ function get_lot_by_id(mysqli $connection, int $lot_id)
     return $lot;
 }
 
+/**
+ * Отображает страницу ошибки с указанным кодом и завершает выполнение скрипта.
+ *
+ * @param int    $code             HTTP-код ошибки.
+ * @param array  $categories       Список категорий для меню.
+ * @param bool   $is_auth          Статус авторизации пользователя.
+ * @param string $user_name        Имя текущего пользователя.
+ * @param string $error_message    Краткое сообщение об ошибке.
+ * @param string $error_description Подробное описание ошибки.
+ *
+ * @return void
+ */
 function show_error(
     int $code,
     array $categories,
@@ -162,6 +217,15 @@ function show_error(
     exit();
 }
 
+/**
+ * Проверяет длину строки и возвращает текст ошибки или null.
+ *
+ * @param string $value Значение для проверки.
+ * @param int    $min   Минимальная длина.
+ * @param int    $max   Максимальная длина.
+ *
+ * @return string|null Текст ошибки или null, если ошибок нет.
+ */
 function validate_length($value, int $min = 1, int $max = 255)
 {
     $value = trim($value);
@@ -183,6 +247,14 @@ function validate_length($value, int $min = 1, int $max = 255)
     return null;
 }
 
+/**
+ * Проверяет корректность выбранной категории.
+ *
+ * @param string $value      Название категории.
+ * @param array  $categories Список категорий из БД.
+ *
+ * @return string|null Сообщение об ошибке или null при валидном значении.
+ */
 function validate_category($value, $categories)
 {
     if (empty($value)) {
@@ -197,6 +269,14 @@ function validate_category($value, $categories)
     return null;
 }
 
+/**
+ * Проверяет, что значение является положительным числом.
+ *
+ * @param mixed  $value      Значение для проверки.
+ * @param string $field_name Название поля в сообщениях.
+ *
+ * @return string|null Текст ошибки либо null при корректном значении.
+ */
 function validate_positive_number($value, $field_name = "Поле")
 {
     if ($value === null || $value === '') {
@@ -215,6 +295,14 @@ function validate_positive_number($value, $field_name = "Поле")
     return null;
 }
 
+/**
+ * Проверяет, что значение является положительным целым числом.
+ *
+ * @param mixed  $value      Значение для проверки.
+ * @param string $field_name Название поля в сообщениях.
+ *
+ * @return string|null Ошибка или null при успехе.
+ */
 function validate_positive_integer($value, $field_name = "Поле")
 {
     if ($value === null || $value === '') {
@@ -234,6 +322,13 @@ function validate_positive_integer($value, $field_name = "Поле")
     return null;
 }
 
+/**
+ * Валидирует дату: формат ГГГГ-ММ-ДД и дата должна быть в будущем.
+ *
+ * @param string $value Дата для проверки.
+ *
+ * @return string|null Сообщение об ошибке или null.
+ */
 function validate_date($value)
 {
     if (empty($value)) {
@@ -252,6 +347,13 @@ function validate_date($value)
     return null;
 }
 
+/**
+ * Проверяет загруженное изображение на тип и размер.
+ *
+ * @param array $file Данные о загруженном файле из $_FILES.
+ *
+ * @return true|string Возвращает true при успехе или текст ошибки.
+ */
 function validate_image($file)
 {
     $allowed_types = ['image/jpeg', 'image/png'];
@@ -272,6 +374,15 @@ function validate_image($file)
     return true;
 }
 
+/**
+ * Валидирует форму создания лота.
+ *
+ * @param array $data Данные из POST.
+ * @param array $files Данные из $_FILES.
+ * @param array $categories Список категорий из БД.
+ *
+ * @return array Ассоциативный массив ошибок (только поля с ошибками).
+ */
 function validate_lot_form($data, $files, $categories)
 {
     $errors = [];
@@ -300,6 +411,13 @@ function validate_lot_form($data, $files, $categories)
     return array_filter($errors);
 }
 
+/**
+ * Сохраняет файл изображения в локальную директорию uploads/.
+ *
+ * @param array $file Массив из $_FILES с ключами tmp_name и name.
+ *
+ * @return string Путь к сохранённому файлу относительно корня проекта.
+ */
 function save_lot_image($file): string
 {
     $file_name = uniqid() . '_' . $file['name'];
@@ -309,6 +427,17 @@ function save_lot_image($file): string
     return 'uploads/' . $file_name;
 }
 
+/**
+ * Добавляет новый лот в базу данных.
+ *
+ * @param mysqli $con Подключение к БД.
+ * @param array $lot Ассоциативный массив данных формы.
+ * @param string $file_url Путь к сохранённому изображению.
+ * @param array $categories Список категорий.
+ * @param int $author_id ID автора лота.
+ *
+ * @return int|null ID вставленного лота или null при ошибке.
+ */
 function save_lot_to_db($con, $lot, $file_url, $categories, $author_id)
 {
     $category_id = null;
@@ -340,6 +469,15 @@ function save_lot_to_db($con, $lot, $file_url, $categories, $author_id)
     return mysqli_stmt_affected_rows($stmt) > 0 ? mysqli_insert_id($con) : null;
 }
 
+/**
+ * Проверяет email на формат, длину и корректность.
+ *
+ * @param string $email Email пользователя.
+ * @param int $min Минимальная длина.
+ * @param int $max Максимальная длина.
+ *
+ * @return string|null Ошибка или null при успехе.
+ */
 function validate_email_format(string $email, int $min = 5, int $max = 320): ?string
 {
     $email = trim($email);
@@ -365,6 +503,14 @@ function validate_email_format(string $email, int $min = 5, int $max = 320): ?st
     return null;
 }
 
+/**
+ * Проверяет существование email в базе данных.
+ *
+ * @param string $email Проверяемый email.
+ * @param mysqli $connection Подключение к базе.
+ *
+ * @return string|null Текст ошибки или null, если email свободен.
+ */
 function check_email_in_db(string $email, mysqli $connection): ?string
 {
     $sql = "SELECT id FROM users WHERE email = ?";
@@ -386,6 +532,13 @@ function check_email_in_db(string $email, mysqli $connection): ?string
     return null;
 }
 
+/**
+ * Выводит относительное время "N минут/часов/дней назад".
+ *
+ * @param string $datetime Дата в формате Y-m-d H:i:s.
+ *
+ * @return string Готовая строка с относительным временем.
+ */
 function time_ago($datetime)
 {
     $now = new DateTime();
@@ -407,6 +560,15 @@ function time_ago($datetime)
     }
 }
 
+/**
+ * Возвращает текущую цену лота (последняя ставка или стартовая цена).
+ *
+ * @param mysqli $connection Подключение к БД.
+ * @param int $lot_id ID лота.
+ * @param int $start_price Стартовая цена.
+ *
+ * @return int Актуальная цена.
+ */
 function get_current_price($connection, $lot_id, $start_price)
 {
     $sql = "SELECT sum FROM bets WHERE lot_id = ? ORDER BY date_placed DESC LIMIT 1";
@@ -420,6 +582,15 @@ function get_current_price($connection, $lot_id, $start_price)
     return $last_sum ?? $start_price;
 }
 
+/**
+ * Проверяет, может ли пользователь сделать ставку.
+ *
+ * @param int|null $user_id ID пользователя (null если не авторизован).
+ * @param array $lot Данные лота.
+ * @param array|null $last_bets Последние ставки по лоту.
+ *
+ * @return bool true, если пользователь имеет право поставить.
+ */
 function can_place_bet(?int $user_id, array $lot, ?array $last_bets): bool
 {
     if (!$user_id) {
@@ -444,6 +615,16 @@ function can_place_bet(?int $user_id, array $lot, ?array $last_bets): bool
     return true;
 }
 
+/**
+ * Получает лоты по категории с пагинацией.
+ *
+ * @param mysqli $connection Подключение к БД.
+ * @param int $category_id ID категории.
+ * @param int $limit Количество записей.
+ * @param int $offset Смещение.
+ *
+ * @return array ['lots' => array, 'total' => int]
+ */
 function get_lots_by_category(mysqli $connection, int $category_id, int $limit, int $offset): array
 {
     $sql = "SELECT SQL_CALC_FOUND_ROWS
@@ -481,6 +662,14 @@ function get_lots_by_category(mysqli $connection, int $category_id, int $limit, 
     ];
 }
 
+/**
+ * Возвращает имя категории по её ID.
+ *
+ * @param array $categories Список категорий.
+ * @param int $category_id Идентификатор категории.
+ *
+ * @return string|null Название категории или null, если не найдено.
+ */
 function get_category_name_by_id(array $categories, int $category_id): ?string
 {
     foreach ($categories as $category) {
@@ -491,6 +680,16 @@ function get_category_name_by_id(array $categories, int $category_id): ?string
     return null;
 }
 
+/**
+ * Поиск лотов по текстовому запросу (FULLTEXT).
+ *
+ * @param mysqli $connection Подключение к БД.
+ * @param string $query Поисковая строка.
+ * @param int $limit Количество результатов.
+ * @param int $offset Смещение.
+ *
+ * @return array ['lots' => array, 'total' => int]
+ */
 function search_lots(mysqli $connection, string $query, int $limit, int $offset): array
 {
     $query = trim($query);

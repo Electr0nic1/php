@@ -1,19 +1,23 @@
 <main>
     <nav class="nav">
         <ul class="nav__list container">
+
             <?php foreach ($categories as $category): ?>
                 <li class="nav__item">
                     <a href="all-lots.php?id=<?= $category['id'] ?>"><?= htmlspecialchars($category['name']) ?></a>
                 </li>
             <?php endforeach; ?>
+
         </ul>
     </nav>
     <section class="rates container">
         <h2>Мои ставки</h2>
+
         <?php if (empty($bets)): ?>
             <p>Вы ещё не сделали ни одной ставки.</p>
         <?php else: ?>
             <table class="rates__list">
+
                 <?php foreach ($bets as $bet):
                     $time_left = get_dt_range($bet["expiration_date"]);
                     $hours_left = $time_left[0];
@@ -32,15 +36,18 @@
                             </div>
                             <div>
                                 <h3 class="rates__title"><a href="lot.php?id=<?= $bet['lot_id'] ?>"><?= $bet['lot_name'] ?></a></h3>
+
                                 <?php if ($is_winner): ?>
                                     <p><?= $bet['author_contacts'] ?></p>
                                 <?php endif; ?>
+
                             </div>
                         </td>
                         <td class="rates__category">
                             <?= $bet['category_name'] ?>
                         </td>
                         <td class="rates__timer">
+
                             <?php if ($is_winner): ?>
                                 <div class="timer timer--win">Ставка выиграла</div>
                             <?php elseif ($is_ended): ?>
@@ -48,6 +55,7 @@
                             <?php else: ?>
                                 <div class="timer <?= $time_class; ?>"><?= $hours_left ?>:<?= $minutes_left ?></div>
                             <?php endif; ?>
+
                         </td>
                         <td class="rates__price">
                             <?= format_ruble($bet['sum']) ?>
@@ -57,7 +65,9 @@
                         </td>
                     </tr>
                 <?php endforeach; ?>
+                
             </table>
         <?php endif; ?>
+
     </section>
 </main>

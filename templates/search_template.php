@@ -1,17 +1,20 @@
 <main>
     <nav class="nav">
         <ul class="nav__list container">
+
             <?php foreach ($categories as $category): ?>
                 <li class="nav__item">
                     <a href="all-lots.php?id=<?= $category['id'] ?>"><?= htmlspecialchars($category['name']) ?></a>
                 </li>
             <?php endforeach; ?>
+
         </ul>
     </nav>
     <div class="container">
         <section class="lots">
             <h2>Результаты поиска по запросу «<span><?= htmlspecialchars($query) ?></span>»</h2>
             <ul class="lots__list">
+
                 <?php foreach ($lots as $lot):
                     $time_left = get_dt_range($lot["expiration_date"]);
                     $hours_left = $time_left[0];
@@ -37,12 +40,12 @@
                         </div>
                     </li>
                 <?php endforeach; ?>
+
             </ul>
         </section>
 
         <?php if ($total_pages > 1): ?>
             <ul class="pagination-list">
-
                 <li class="pagination-item pagination-item-prev <?= $page <= 1 ? 'disabled' : '' ?>">
                     <?php if ($page > 1): ?>
                         <a href="?search=<?= urlencode($query) ?>&page=<?= $page - 1 ?>">Назад</a>
@@ -64,7 +67,6 @@
                         <span>Вперед</span>
                     <?php endif; ?>
                 </li>
-
             </ul>
         <?php endif; ?>
 
